@@ -84,5 +84,62 @@ def run(stdscr):
             "player_x": player_x, "player_y": player_y, "rows": rows,
             "last_spawn": last_spawn, "spawn_dt": spawn_dt,
             "gap_width": gap_width, "survived": survived,
-            
+            "alive": alive, "paused": paused
         }
+    
+    g = new_game()
+
+    while True:
+        t0 = time.time()
+
+        ch = stdscr.getch()
+        if ch != -1:
+            if ch in QUIT_KEYS:
+                return
+            if ch == curses.KEY_RESIZE:
+                reset()
+                
+                #PLAYER BOUNDS TO SCREW AROUND WITH
+                g["player_x"] = clamp(g["player_x"], left+1, right-1)
+            elif ch in PAUSE_KEYS and g["alive"]:
+                g["paused"] = not g["paused"]
+            elif ch in RESTART_KEYS and not g["alive"]:
+                g = new_game()
+            elif g["alive"] and not g["paused"]:
+                if ch in LEFT_KEYS:
+                    g["player_x"] -= 1
+                elif ch in RIGHT_KEYS:
+                    g["player_x"] += 1
+                g["player_x"] = clamp(g["player_x"], left+1, right-1)
+
+        if g["alive"] and not g["paused"]:
+            if time.time() - g["last_spawn"] >= g["spawn_dt"]:
+                play_w = (right - left - 1)
+                gap_w = g["gap_width"]
+                if gap_w > play_w -2:
+                    gap_w = max(3, play_w // 3)
+                gap_start = random.randint(left+1, right - gap_w -1)
+                g["rows"].append(Row(y=top+1, gap_start=gap_start, gap_wdith=gap_w))
+                g["last_spawn"] = time.time()
+
+            for r in g["rows"]:
+                r.y += 1
+
+            next_rows = []
+            for r in g["rows"]:
+                if r.y == g["player_y"]:
+                    if not (r.gap_start <= g["player_x"] < r.gap_start + r.gap_width):
+                        g["alive"] = False
+                    else:
+                        g["survived"] += 1
+                        if g["survived"] % SPEEDUP_EVERY == 0:
+                            g["spawn_dt"] = max(0.15, g["spawn_dt"] * SPEEDUP_FACTOR)
+                            g["gap_width"] = max(MIN_GAP_WIDTH, g["gap_width"] - 1)
+                if r.y <= bottom -1:
+                    next_rows.append(r)
+            g["rows"] = next_rows
+        
+        stdscr.erase()
+
+        
+

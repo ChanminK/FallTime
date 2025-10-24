@@ -1,7 +1,9 @@
 # FallTime
 Siege Week 8 Project: Falltime!
 
-Another
+A terminal-based project where you have to fall while avoiding obstacles!
+
+It's time for ANOTHER
 ![S](https://img.shields.io/badge/S-blue?style=for-the-badge)
 ![i](https://img.shields.io/badge/i-red?style=for-the-badge)
 ![e](https://img.shields.io/badge/e-orange?style=for-the-badge)
