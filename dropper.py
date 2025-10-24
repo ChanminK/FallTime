@@ -5,8 +5,8 @@ import curses, time, random, sys
 PLAYER_CHAR = "@"
 OB_CHAR = "#"
 EMPTY = " "
-BORDER = " | "
-TOP_BOTTOM = " - "
+BORDER = "|"
+TOP_BOTTOM = "-"
 
 START_GAP_WIDTH = 8
 MIN_GAP_WIDTH = 3
@@ -22,10 +22,10 @@ QUIT_KEYS = {27, ord('q')}
 
 class Row:
     __slots__ = ("y", "gap_start", "gap_width")
-    def __init__(self, y, gap_start, gap_wdith):
+    def __init__(self, y, gap_start, gap_width):
         self.y = y
         self.gap_start = gap_start
-        self.gap_width - gap_wdith
+        self.gap_width = gap_width
 
 def clamp(x, lo, hi): return lo if x < lo else hi if x > hi else x
 
@@ -119,7 +119,7 @@ def run(stdscr):
                 if gap_w > play_w -2:
                     gap_w = max(3, play_w // 3)
                 gap_start = random.randint(left+1, right - gap_w -1)
-                g["rows"].append(Row(y=top+1, gap_start=gap_start, gap_wdith=gap_w))
+                g["rows"].append(Row(y=top+1, gap_start=gap_start, gap_width=gap_w))
                 g["last_spawn"] = time.time()
 
             for r in g["rows"]:
@@ -169,7 +169,8 @@ def run(stdscr):
 
         if g["paused"]:
             msg = "[PAUSED] press P to resume"
-            draw_text(stdscr, (top+bottom)//2, (width - len(msg)//2, msg))
+            draw_text(stdscr, (top+bottom)//2, (width - len(msg))//2, msg)
+
         if not g["alive"]:
             msg1 = "You crashed!"
             msg2 = f"Score: {g['survived']} Press R to restart or Q to quit!"
