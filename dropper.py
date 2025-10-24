@@ -70,4 +70,19 @@ def run(stdscr):
     width = height = left = right = top = bottom = 0
     reset()
 
-    #i wanna go to sleep
+    def new_game():
+        player_y = bottom -2
+        player_x = (left + right) //2
+        rows = []
+        last_spawn = time.time()
+        spawn_dt = SPAWN_EVERY_SEC
+        gap_width = START_GAP_WIDTH
+        survived = 0
+        alive = True
+        paused = False
+        return {
+            "player_x": player_x, "player_y": player_y, "rows": rows,
+            "last_spawn": last_spawn, "spawn_dt": spawn_dt,
+            "gap_width": gap_width, "survived": survived,
+            
+        }
