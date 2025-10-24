@@ -141,5 +141,53 @@ def run(stdscr):
         
         stdscr.erase()
 
+        draw_hline(stdscr, top, left, right, TOP_BOTTOM)
+        draw_hline(stdscr, bottom, left, right, TOP_BOTTOM)
+        for y in range(top+1, bottom):
+            try:
+                stdscr.addch(y, left, BORDER)
+                stdscr.addch(y, right, BORDER)
+            except curses.error:
+                pass
         
+        hud = f" Terminal Dropper | Score: {g['survived']} Gap:{g['gap_width']} Spawn:{g['spawn_dt']:.2f}s [←/→ or A/D]  (P)ause  (R)estart  (Q)uit "
+        draw_text(stdscr, 0, 0, hud[:max(0, width-1)])
 
+        for r in g["rows"]:
+            y = r.y
+            if top < y < bottom:
+                draw_hline(stdscr, y, left+1, right-1, OB_CHAR)
+                for x in range(r.gap_start, r.gap_start + r.gap_width):
+                    if left < x < right:
+                        try: stdscr.addch(y, x, EMPTY)
+                        except curses.error: pass
+                
+        try:
+            stdscr.addch(g["player_y"], g["player_x"], PLAYER_CHAR)
+        except curses.error:
+            pass
+
+        if g["paused"]:
+            msg = "[PAUSED] press P to resume"
+            draw_text(stdscr, (top+bottom)//2, (width - len(msg)//2, msg))
+        if not g["alive"]:
+            msg1 = "You crashed!"
+            msg2 = f"Score: {g['survived']} Press R to restart or Q to quit!"
+            draw_text(stdscr, (top+bottom)//2, (width - len(msg1))//2, msg1)
+            draw_text(stdscr, (top+bottom)//2 + 1, (width - len(msg2))//2, msg2)
+
+        stdscr.refresh()
+
+        dt = time.time() -t0
+        if dt < TICK:
+            time.sleep(TICK - dt)
+
+def main():
+    try:
+        curses.wrapper(run)
+    except KeyboardInterrupt:
+        pass
+
+if __name__ == "__main__":
+    main()
+    
