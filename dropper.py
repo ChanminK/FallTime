@@ -20,6 +20,10 @@ PAUSE_KEYS = {ord('p')}
 RESTART_KEYS = {ord('r')}
 QUIT_KEYS = {27, ord('q')}
 
+ROW_STEP_SEC = 0.10
+MIN_ROW_STEP_SEC = 0.03
+PLAYER_STEP = 2
+
 class Row:
     __slots__ = ("y", "gap_start", "gap_width")
     def __init__(self, y, gap_start, gap_width):
