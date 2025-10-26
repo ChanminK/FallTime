@@ -84,11 +84,14 @@ def run(stdscr):
         survived = 0
         alive = True
         paused = False
+        fall_dt = ROW_STEP_SEC
+        last_fall = time.time()
         return {
             "player_x": player_x, "player_y": player_y, "rows": rows,
             "last_spawn": last_spawn, "spawn_dt": spawn_dt,
             "gap_width": gap_width, "survived": survived,
-            "alive": alive, "paused": paused
+            "alive": alive, "paused": paused,
+            "fall_dt": fall_dt, "last_fall": last_fall
         }
     
     g = new_game()
@@ -126,8 +129,11 @@ def run(stdscr):
                 g["rows"].append(Row(y=top+1, gap_start=gap_start, gap_width=gap_w))
                 g["last_spawn"] = time.time()
 
-            for r in g["rows"]:
-                r.y += 1
+            now = time.time()
+            if now - g["last_spawn"] >= g["fall_dt"]:
+                for r in g["rows"]:
+                    r.y += 1
+                g["last_fall"]
 
             next_rows = []
             for r in g["rows"]:
@@ -137,8 +143,8 @@ def run(stdscr):
                     else:
                         g["survived"] += 1
                         if g["survived"] % SPEEDUP_EVERY == 0:
-                            g["spawn_dt"] = max(0.15, g["spawn_dt"] * SPEEDUP_FACTOR)
-                            g["gap_width"] = max(MIN_GAP_WIDTH, g["gap_width"] - 1)
+                            g["spawn_dt"] = max(0.15, g["spawn_dt"] & SPEEDUP_FACTOR)
+                            
                 if r.y <= bottom -1:
                     next_rows.append(r)
             g["rows"] = next_rows
