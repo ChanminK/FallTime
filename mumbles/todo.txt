@@ -6,6 +6,10 @@ make the thing falling down be a bit slower
     start at 1 line per 3 seconds then slowly start falling faster 
     or smth else idk
 
+add levels:
+    current game loop way too short
+    either survive 30 seconds or smth else
+
 let the player move a bit quicker
     Create a playerspeed variable and change it while time changes?
     or based on how long they hold the movement key
@@ -19,10 +23,6 @@ add obstacles/powerups?
 beginner tutorial
     Id say maybe just like text appearing on the screen and showing how to play
     Show powerups working and how to move 
-
-add levels:
-    current game loop way too short
-    either survive 30 seconds or smth else
 
 
 I WANNA MAKE A TOUHOU TYPE GAME SO BAD MAN
