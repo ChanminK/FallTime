@@ -144,7 +144,8 @@ def run(stdscr):
                         g["survived"] += 1
                         if g["survived"] % SPEEDUP_EVERY == 0:
                             g["spawn_dt"] = max(0.15, g["spawn_dt"] & SPEEDUP_FACTOR)
-                            
+                            g["gap_width"] = max(MIN_GAP_WIDTH, g["gap_width"] -1)
+                            g["fall_dt"] = max(MIN_ROW_STEP_SEC, g["fall_dt"] * SPEEDUP_FACTOR )
                 if r.y <= bottom -1:
                     next_rows.append(r)
             g["rows"] = next_rows
