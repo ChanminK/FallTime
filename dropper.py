@@ -8,9 +8,13 @@ EMPTY = " "
 BORDER = "|"
 TOP_BOTTOM = "-"
 
+FALL_START_SEC = 3.0
+FALL_MIN_SEC = 0.20
+FALL_MULT_PER_POINT = 0.985
+
 START_GAP_WIDTH = 8
 MIN_GAP_WIDTH = 3
-SPAWN_EVERY_SEC = 0.60
+SPAWN_EVERY_SEC = 0.60 * FALL_START_SEC
 SPEEDUP_EVERY = 8
 SPEEDUP_FACTOR = 0.92
 TICK = 1/60
@@ -23,6 +27,8 @@ QUIT_KEYS = {27, ord('q')}
 ROW_STEP_SEC = 0.10
 MIN_ROW_STEP_SEC = 0.03
 PLAYER_STEP = 2
+
+
 
 class Row:
     __slots__ = ("y", "gap_start", "gap_width")
@@ -84,7 +90,7 @@ def run(stdscr):
         survived = 0
         alive = True
         paused = False
-        fall_dt = ROW_STEP_SEC
+        fall_dt = FALL_START_SEC
         last_fall = time.time()
         return {
             "player_x": player_x, "player_y": player_y, "rows": rows,
@@ -133,7 +139,7 @@ def run(stdscr):
             if now - g["last_spawn"] >= g["fall_dt"]:
                 for r in g["rows"]:
                     r.y += 1
-                g["last_fall"]
+                g["last_fall"] = now
 
             next_rows = []
             for r in g["rows"]:
@@ -142,10 +148,10 @@ def run(stdscr):
                         g["alive"] = False
                     else:
                         g["survived"] += 1
+                        g["fall_dt"] = max(FALL_MIN_SEC, g["fall_dt"] * FALL_MULT_PER_POINT)
                         if g["survived"] % SPEEDUP_EVERY == 0:
                             g["spawn_dt"] = max(0.15, g["spawn_dt"] & SPEEDUP_FACTOR)
                             g["gap_width"] = max(MIN_GAP_WIDTH, g["gap_width"] -1)
-                            g["fall_dt"] = max(MIN_ROW_STEP_SEC, g["fall_dt"] * SPEEDUP_FACTOR )
                 if r.y <= bottom -1:
                     next_rows.append(r)
             g["rows"] = next_rows

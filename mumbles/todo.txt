@@ -4,9 +4,12 @@ alright basic game done need to do some fixes(in terms of priportiy):
 make the thing falling down be a bit slower
     change fall incrementation speed - speeds up too quickly atm
     start at 1 line per 3 seconds then slowly start falling faster 
+    or smth else idk
 
 let the player move a bit quicker
-    Create a playerspeed variable and change it while time differs?
+    Create a playerspeed variable and change it while time changes?
+    or based on how long they hold the movement key
+    OH WAIT I CAN USE SHIFT KEY
 
 add obstacles/powerups?
     for example maybe bombs that explode 
