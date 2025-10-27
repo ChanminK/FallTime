@@ -1,7 +1,7 @@
 LEVELS = [
     {
         "name": "Level 1 - Warmup",
-        "survive_seconds": 30,
+        "survive_seconds": 60,
         "start_gap_width": 8,
         "min_gap_width": 4,
         "fall_start_sec": 3.0,
@@ -19,7 +19,7 @@ LEVELS = [
     #WHY IS THIS AN ERROR
     {
         "name": "Level 2 - Picking Up",
-        "survive_seconds": 35,
+        "survive_seconds": 90,
         "start_gap_width": 7,
         "min_gap_width": 3,
         "fall_start_sec": 2.0,
@@ -36,7 +36,7 @@ LEVELS = [
     },
     {
         "name": "Level 3 - Tight Gaps",
-        "survive_seconds": 40,
+        "survive_seconds": 100,
         "start_gap_width": 6,
         "min_gap_width": 3,
         "fall_start_sec": 1.4,

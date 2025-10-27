@@ -18,12 +18,6 @@ QUIT_KEYS = {27, ord('q')}
 
 RESTART_KEYS = {ord('r')}
 
-rows_apart = cfg.get("rows_apart_start", 3.5)
-rows_apart_min = cfg.get("rows_apart_min", 2.0)
-rows_apart_decay_per_sec = cfg.get("rows_apart_decay_per_sec", 0.02)
-
-fall_rate_per_sec = cfg.get("fall_rate_per_sec", 0.05)
-
 class Row:
     __slots__ = ("y", "gap_start", "gap_width")
     def __init__(self, y, gap_start, gap_width):
@@ -41,11 +35,13 @@ def draw_hline(stdscr, y, x1, x2, ch):
         except curses.error:
             pass
 
+
 def draw_text(stdscr, y, x, s):
     try:
         stdscr.addstr(y, x, s)
     except curses.error:
         pass
+
 
 def level_intro(stdscr, name, idx, total):
     stdscr.clear()
@@ -54,11 +50,13 @@ def level_intro(stdscr, name, idx, total):
     draw_text(stdscr, 4, 2, "Press any key to start, or Q to quit…")
     ch = stdscr.getch()
     if ch in QUIT_KEYS:
+        stdscr.nodelay(False)
         return False
     return True
 
 
 def play_level(stdscr, bounds, cfg):
+    stdscr.nodelay(True)
     name = cfg["name"]
     survive_seconds = cfg["survive_seconds"]
     start_gap_width = cfg["start_gap_width"]
@@ -66,18 +64,20 @@ def play_level(stdscr, bounds, cfg):
     fall_start_sec = cfg["fall_start_sec"]
     fall_min_sec = cfg["fall_min_sec"]
     fall_mult_per_point = cfg["fall_mult_per_point"]
-    spawn_every_sec = cfg["spawn_every_factor"] * fall_start_sec
     speedup_every = cfg["speedup_every"]
     speedup_factor = cfg["speedup_factor"]
     player_step = cfg["player_step"]
+
+    rows_apart = cfg.get("rows_apart_start", 3.5)
+    rows_apart_min = cfg.get("rows_apart_min", 2.0)
+    rows_apart_decay_per_sec = cfg.get("rows_apart_decay_per_sec", 0.02)
+    fall_rate_per_sec = cfg.get("fall_rate_per_sec", 0.05)
 
     left, right, top, bottom = bounds
 
     player_y = bottom-2
     player_x = (left + right) // 2
     rows = []
-    spawn_dt = fall_dt * rows_apart
-    last_spawn = time.time() - spawn_dt * 4
     gap_width = start_gap_width
     survived_rows = 0
     alive = True
@@ -85,6 +85,9 @@ def play_level(stdscr, bounds, cfg):
 
     fall_dt = fall_start_sec
     last_fall = time.time()
+
+    spawn_dt = max(0.08, fall_dt * rows_apart)
+    last_spawn = time.time() - spawn_dt * 0.4
 
     elapsed_alive = 0.0
     prev = time.time()
@@ -97,12 +100,14 @@ def play_level(stdscr, bounds, cfg):
         ch = stdscr.getch()
         if ch != -1:
             if ch in QUIT_KEYS:
+                stdscr.nodelay(False)
                 return "quit"
             if ch == curses.KEY_RESIZE:
                 pass
             elif ch in PAUSE_KEYS and alive:
                 paused = not paused
             elif ch in RESTART_KEYS and not alive:
+                stdscr.nodelay(False)
                 return "retry"
             elif alive and not paused:
                 if ch in LEFT_KEYS:
@@ -114,7 +119,12 @@ def play_level(stdscr, bounds, cfg):
         if alive and not paused:
             elapsed_alive += dt
             if elapsed_alive >= survive_seconds:
+                stdscr.nodelay(False)
                 return "win"
+
+            fall_dt = max(fall_min_sec, fall_dt * (1.0 - fall_rate_per_sec * dt))
+            rows_apart = max(rows_apart_min, rows_apart - rows_apart_decay_per_sec * dt)
+            spawn_dt = max(0.08, fall_dt * rows_apart)
 
             if time.time() - last_spawn >= spawn_dt:
                 play_w = (right - left - 1)
@@ -137,9 +147,8 @@ def play_level(stdscr, bounds, cfg):
                         alive = False
                     else:
                         survived_rows += 1
-                        fall_dt = max(fall_min_sec, fall_dt * (1.0 - fall_rate_per_sec * dt))
+                        fall_dt = max(fall_min_sec, fall_dt * fall_mult_per_point)
                         if survived_rows % speedup_every == 0:
-                            spawn_dt = max(0.15, spawn_dt * speedup_factor)
                             gap_width = max(min_gap_width, gap_width - 1)
                 if r.y <= bottom - 1:
                     next_rows.append(r)
@@ -244,3 +253,5 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+# hi reviewers :)

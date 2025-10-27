@@ -11,14 +11,23 @@ It's time for ANOTHER
 ![e](https://img.shields.io/badge/e-green?style=for-the-badge)
 Project!
 
-Check the demo link in top left or the demovideo below!
+How to play/run:
+
+1. **Clone or copy the project**  
+   Save both `dropper.py` and `levels.py` in the same folder.
+
+2. **Run the game**
+   ```bash
+   python dropper.py
 __________________________________________________________________________
 DEMO:
 ![Demo](assets/demovid.gif)
 __________________________________________________________________________
 
 Tech Stack:
-__todo__
+**Python 3** | Core programming language
+**curses** | Terminal rendering, keyboard input, and animation control 
+**time / random** | Used for timing, frame updates, and generating random gaps 
 
 <details><summary>whats here?</summary>
 There may be a few secrets~
