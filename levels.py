@@ -10,8 +10,13 @@ LEVELS = [
         "spawn_every_factor": 0.90,
         "speedup_every": 10,
         "speedup_factor": 0.96,
-        "player_step": 2
+        "player_step": 2,
+        "rows_apart_start": 3.5,
+        "rows_apart_min": 2.5,
+        "rows_apart_decay_per_sec": 0.010,
+        "fall_rate_per_sec": 0.04,
     },
+    #WHY IS THIS AN ERROR
     {
         "name": "Level 2 - Picking Up",
         "survive_seconds": 35,
@@ -23,7 +28,11 @@ LEVELS = [
         "spawn_every_factor": 0.85,
         "speedup_every": 8,
         "speedup_factor": 0.94,
-        "player_step": 2
+        "player_step": 2,
+        "rows_apart_start": 3.2,
+        "rows_apart_min": 2.2,
+        "rows_apart_decay_per_sec": 0.015,
+        "fall_rate_per_sec": 0.055,
     },
     {
         "name": "Level 3 - Tight Gaps",
@@ -36,6 +45,10 @@ LEVELS = [
         "spawn_every_factor": 0.80,
         "speedup_every": 7,
         "speedup_factor": 0.92,
-        "player_step": 3
+        "player_step": 3,
+        "rows_apart_start": 3.0,
+        "rows_apart_min": 2.0,
+        "rows_apart_decay_per_sec": 0.020,
+        "fall_rate_per_sec": 0.070,
     }
 ]

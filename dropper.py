@@ -18,6 +18,12 @@ QUIT_KEYS = {27, ord('q')}
 
 RESTART_KEYS = {ord('r')}
 
+rows_apart = cfg.get("rows_apart_start", 3.5)
+rows_apart_min = cfg.get("rows_apart_min", 2.0)
+rows_apart_decay_per_sec = cfg.get("rows_apart_decay_per_sec", 0.02)
+
+fall_rate_per_sec = cfg.get("fall_rate_per_sec", 0.05)
+
 class Row:
     __slots__ = ("y", "gap_start", "gap_width")
     def __init__(self, y, gap_start, gap_width):
@@ -70,8 +76,8 @@ def play_level(stdscr, bounds, cfg):
     player_y = bottom-2
     player_x = (left + right) // 2
     rows = []
-    last_spawn = time.time()
-    spawn_dt = spawn_every_sec
+    spawn_dt = fall_dt * rows_apart
+    last_spawn = time.time() - spawn_dt * 4
     gap_width = start_gap_width
     survived_rows = 0
     alive = True
@@ -131,7 +137,7 @@ def play_level(stdscr, bounds, cfg):
                         alive = False
                     else:
                         survived_rows += 1
-                        fall_dt = max(fall_min_sec, fall_dt * fall_mult_per_point)
+                        fall_dt = max(fall_min_sec, fall_dt * (1.0 - fall_rate_per_sec * dt))
                         if survived_rows % speedup_every == 0:
                             spawn_dt = max(0.15, spawn_dt * speedup_factor)
                             gap_width = max(min_gap_width, gap_width - 1)
