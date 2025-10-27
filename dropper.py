@@ -1,7 +1,7 @@
 #new dropperrrr, keeping old one just in case/proof of work lol
 
 import curses, time, random
-from level1 import LEVELS
+from levels import LEVELS
 
 PLAYER_CHAR = "@"
 OB_CHAR = "#"
@@ -15,6 +15,8 @@ LEFT_KEYS = {curses.KEY_LEFT, ord('a'), ord('h')}
 RIGHT_KEYS = {curses.KEY_RIGHT, ord('d'), ord('l')}
 PAUSE_KEYS = {ord('p')}
 QUIT_KEYS = {27, ord('q')}
+
+RESTART_KEYS = {ord('r')}
 
 class Row:
     __slots__ = ("y", "gap_start", "gap_width")
@@ -38,6 +40,17 @@ def draw_text(stdscr, y, x, s):
         stdscr.addstr(y, x, s)
     except curses.error:
         pass
+
+def level_intro(stdscr, name, idx, total):
+    stdscr.clear()
+    title = f"Level {idx+1}/{total}: {name}"
+    draw_text(stdscr, 2, 2, title)
+    draw_text(stdscr, 4, 2, "Press any key to start, or Q to quit…")
+    ch = stdscr.getch()
+    if ch in QUIT_KEYS:
+        return False
+    return True
+
 
 def play_level(stdscr, bounds, cfg):
     name = cfg["name"]
@@ -68,59 +81,64 @@ def play_level(stdscr, bounds, cfg):
     last_fall = time.time()
 
     elapsed_alive = 0.0
-    frame_t0 = time.time()
+    prev = time.time()
 
-    ch = stdscr.getch()
-    if ch != -1:
-        if ch in QUIT_KEYS:
-            return "quit"
-        if ch == curses.KEY_RESIZE:
-            pass
-        elif ch in PAUSE_KEYS and alive:
-            paused = not paused
-        elif ch in RESTART_KEYS and not alive:
-            return "retry"
-        elif alive and not paused:
-            if ch in LEFT_KEYS:
-                player_x -= player_step
-            elif ch in RIGHT_KEYS:
-                player_x += player_step
-            player_x = clamp(player_x, left+1, right-1)
-    
-    if alive and not paused:
-        elapsed_alive += dt
-        if elapsed_alive >= survive_seconds:
-            return "win"
-        
-        if time.time() - last_spawn >= spawn_dt:
-            play_w = (right - left - 1)
-            gw = gap_width
-            if gw > play_w - 2:
-                gw = max(3, play_w // 3)
-            gap_start = random.randint(left+1, right - gw -1)
-            row.append(Row(y=top+1, gap_start=gap_start, gap_width = gw))
-        
+    while True:
         now = time.time()
-        if now - last_fall >= fall_dt:
-            for r in rows:
-                r.y += 1
-            last_fall = now
+        dt = now - prev
+        prev = now
 
-        next_rwos = []
-        for r in rows:
-            if r.y == player_y:
-                if not (r.gap_start <= player_x < r.gap_start + r.gap_width):
-                    alive = False
-                else:
-                    survived_rows += 1
-                    fall_dt = max(fall_min_sec, fall_dt * fall_mult_per_point)
-                    if survived_rows % speedup_every == 0:
-                        spawn_dt = max(0.15, spawn_dt * speedup_factor)
-                        gap_width = max(min_gap_width, gap_width -1)
-                if r.y <= bottom -1:
+        ch = stdscr.getch()
+        if ch != -1:
+            if ch in QUIT_KEYS:
+                return "quit"
+            if ch == curses.KEY_RESIZE:
+                pass
+            elif ch in PAUSE_KEYS and alive:
+                paused = not paused
+            elif ch in RESTART_KEYS and not alive:
+                return "retry"
+            elif alive and not paused:
+                if ch in LEFT_KEYS:
+                    player_x -= player_step
+                elif ch in RIGHT_KEYS:
+                    player_x += player_step
+                player_x = clamp(player_x, left+1, right-1)
+
+        if alive and not paused:
+            elapsed_alive += dt
+            if elapsed_alive >= survive_seconds:
+                return "win"
+
+            if time.time() - last_spawn >= spawn_dt:
+                play_w = (right - left - 1)
+                gw = gap_width
+                if gw > play_w - 2:
+                    gw = max(3, play_w // 3)
+                gap_start = random.randint(left+1, right - gw - 1)
+                rows.append(Row(y=top+1, gap_start=gap_start, gap_width=gw))
+                last_spawn = time.time()
+
+            if time.time() - last_fall >= fall_dt:
+                for r in rows:
+                    r.y += 1
+                last_fall = time.time()
+
+            next_rows = []
+            for r in rows:
+                if r.y == player_y:
+                    if not (r.gap_start <= player_x < r.gap_start + r.gap_width):
+                        alive = False
+                    else:
+                        survived_rows += 1
+                        fall_dt = max(fall_min_sec, fall_dt * fall_mult_per_point)
+                        if survived_rows % speedup_every == 0:
+                            spawn_dt = max(0.15, spawn_dt * speedup_factor)
+                            gap_width = max(min_gap_width, gap_width - 1)
+                if r.y <= bottom - 1:
                     next_rows.append(r)
-            rows = next_rows
-        
+            rows = next_rows                 
+
         stdscr.erase()
         draw_hline(stdscr, top, left, right, TOP_BOTTOM)
         draw_hline(stdscr, bottom, left, right, TOP_BOTTOM)
@@ -130,8 +148,14 @@ def play_level(stdscr, bounds, cfg):
                 stdscr.addch(y, right, BORDER)
             except curses.error:
                 pass
-        
-        remaining = max(stdscr, 0, 0, hud[:curses.COLS-1])
+
+        remaining = max(0, int(survive_seconds - elapsed_alive))
+        hud = (
+            f" {name} | Time:{remaining:>2}s  Rows:{survived_rows}"
+            f"  Gap:{gap_width}  Spawn:{spawn_dt:.2f}s  Fall:{fall_dt:.2f}s"
+            "  [←/→ A/D] (P)ause (R)etry (Q)uit "
+        )
+        draw_text(stdscr, 0, 0, hud[:curses.COLS-1])
 
         for r in rows:
             y = r.y
@@ -157,14 +181,13 @@ def play_level(stdscr, bounds, cfg):
             draw_text(stdscr, (top+bottom)//2 + 1, (curses.COLS - len(msg2))//2, msg2)
 
         stdscr.refresh()
-
         if dt < TICK:
             time.sleep(TICK - dt)
 
 def run(stdscr):
     curses.curs_set(0)
     stdscr.nodelay(False)
-    stdscr.keybad(True)
+    stdscr.keypad(True)
     curses.use_default_colors()
 
     def compute_bounds():
@@ -196,7 +219,7 @@ def run(stdscr):
                 if outcome == "quit":
                     return
                 continue
-        elif outcome = "win":
+        elif outcome == "win":
             stdscr.clear()
             msg = f"✔ Level {i+1} complete!"
             draw_text(stdscr, 0, 0, msg)
