@@ -19,6 +19,10 @@ How to play/run:
 2. **Run the game**
    ```bash
    python dropper.py
+
+
+Or use the pypi release! Just run pypi install falltime 
+
 __________________________________________________________________________
 DEMO:
 ![Demo](assets/demovid.gif)

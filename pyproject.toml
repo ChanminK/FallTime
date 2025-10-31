@@ -1,0 +1,22 @@
+[build-system]
+requires = ["setuptools>=69", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "falltime"                 # choose a unique name on PyPI
+version = "0.1.0"
+description = "FallTime: (short description)"
+readme = "README.md"
+requires-python = ">=3.9"
+license = {file = "LICENSE"}
+authors = [{name = "Your Name"}]
+dependencies = []
+
+[project.urls]
+Homepage = "https://github.com/<you>/FallTime"
+
+[project.scripts]
+falltime = "dropper:main"
+
+[tool.setuptools]
+py-modules = ["dropper", "level", "tutorial"]
